@@ -29,21 +29,18 @@ func startRepl() {
 		command, exists := getCommands()[commandName]
 
 		if exists {
-			// is there a better way to do this block for calling the input for add?
-			if commandName == "add" {
-				instructions := strings.Join(words[1:], " ")
-				err := command.callback(instructions)
-			} else {
-				err := command.callback()
-			}
-			//
+            var err error
+            if command.callbackWithInput !=nil{
+                inputForCommand := strings.Join(words[1:], " ")
+                err = command.callbackWithInput(inputForCommand)
+            }else if command.callback != nil{
+                err = command.callback()
+            }
 			if err != nil {
 				fmt.Println(err)
 			}
-			continue
 		} else {
 			fmt.Println("unknown command")
-			continue
 		}
 	}
 }
@@ -52,6 +49,7 @@ type cliCommand struct {
 	name        string
 	description string
 	callback    func() error
+    callbackWithInput func(string) error
 }
 
 func getCommands() map[string]cliCommand {
@@ -74,7 +72,12 @@ func getCommands() map[string]cliCommand {
 		"add": {
 			name:        "add",
 			description: "adds to your todo list | Example: add walk the dog",
-			callback:    commandAddTodo, //how do i pass scanner.Text to this function as the input?
+			callbackWithInput:    commandAddTodo, //how do i pass scanner.Text to this function as the input?
 		},
+        "remove":{
+            name: "remove",
+            description:"removes item from your list | Example: remvoe walk the dog",
+            callbackWithInput: commandRemoveTodo,
+        },
 	}
 }
